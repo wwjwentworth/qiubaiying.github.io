@@ -1,107 +1,84 @@
 ---
 layout:     post
-title:      从一道网易面试题浅谈 Tagged Pointer
-subtitle:   浅谈 Tagged Pointer
-date:       2017-12-26
-author:     BY
+title:      动态规划之背包问题问题
+subtitle:   背包问题/0-1背包问题
+date:       2018-05-09
+author:     WWJ
 header-img: img/post-bg-universe.jpg
 catalog: true
 tags:
-    - iOS
+    算法
+    动态规划
 ---
+#动态规划
 
+##背包问题
 
-## 前言
+###关于背包问题，其实有两种情况，第一个是0-1背包问题，第一个是部分背包问题
+1. 先来通过一个例子看看二者的区别吧
+有一个窃贼在偷窃一家商店时发现N件物品，每一件物品的价格为vi，重量为wi，他希望带走的东西越多越好，但是他的背包最多承重量为W，所以他要尽可能地带走性价比高的物品，他应该要怎么选择？
+**0-1背包问题：**物品要么被带走，要么被留下，（需要做出0-1选择），小偷不能带走一个物品的一部分或者两次以上同一个物品
+**部分背包问题：**小偷可以带走一个物品的一部分，即物品可以被分割
 
-这篇博客九月就想写了，因为赶项目拖了到现在，抓住17年尾巴写吧~
-
-
-## 正文
-
-上次看了一篇 [《从一道网易面试题浅谈OC线程安全》](https://www.jianshu.com/p/cec2a41aa0e7) 的博客，主要内容是：
-
-作者去网易面试，面试官出了一道面试题：下面代码会发生什么问题？
-
-```objc
-@property (nonatomic, strong) NSString *target;
-//....
-dispatch_queue_t queue = dispatch_queue_create("parallel", DISPATCH_QUEUE_CONCURRENT);
-for (int i = 0; i < 1000000 ; i++) {
-    dispatch_async(queue, ^{
-        self.target = [NSString stringWithFormat:@"ksddkjalkjd%d",i];
-    });
-}
+2. 0-1背包问题和部分背包问题的解法
+**0-1背包问题：**采用动态规划的解法
+我们用`F(i, w)`表示当拿到第i个物品，且背包剩余承重量为w的情况下背包里物品的总价值能达到的最大值，这里有两种情况，第一个是当前物品的承重量大于当前背包剩余承重量，即`wi > w`，那么这个时候当前的这个物品肯定是不能拿的，背包状态不变，依然等于上一个状态：即`F(i, w) = F(i - 1, w)`;第二种情况是当前物品的重量小于当前背包的剩余承重量，那么这个时候就要比较了，无非就是比较两种情况，要么拿当前物品，要么不拿。当拿当前物品的时候，背包状态发生改变，即背包里物品的总价值会加上当前物品的价值，但是相应的背包剩余承重量会减去当前物品的重量，即`F(i， w) = vi + F(i - 1, w - wi)`;要么不拿，背包状态不会发生改变，依然等于上一个状态：即`F(i, w) = F(i - 1, w)`；我们的目的就是要是的当前背包里物品的总价值能达到最大，这两种情况取最大值，即`F(i, w) = max(F(i - 1, w), vi + F(i - 1, w - wi))`
+通过上述分析，最终的状态转移方程就是：
+代码实现：
+```javascript
+/*
+            //w:每个物品的重
+            //v:每个物品的价格
+            //W:背包总的承重量
+        */
+        const zo_knapsack_problem = function(w, v, W) {
+            let F = new Array()
+            for(let i = 0; i <= w.length; i++) {
+                F[i] = new Array()
+            }
+            console.log(F)
+            for(let i = 0; i <= W; i++) {
+                F[0][i] = 0
+            }
+            for(let i = 0; i < w.length; i++) {
+                F[i][0] = 0
+            }
+            for(let i = 1; i < w.length; i++) {
+                for(let j = 1; j <= W; j++) {
+                    if(w[i] > j) {
+                        F[i][j] = F[i - 1][j]
+                    } else {
+                        F[i][j] = Math.max(F[i - 1][j], v[i] + F[i - 1][j - w[i]])
+                    }
+                }
+            }
+            return F[w.length - 1][W]
+        }
+        const main = function() {
+            const w = [0, 2,1,3,2], v = [0, 10,12,15,20], W = 5
+            return zo_knapsack_problem(w, v, W)
+        }
 ```
-
-答案是：会 crash。
-
-我们来看看对`target`属性（`strong`修饰）进行赋值，相当与 MRC 中的
-
+**部分背包问题：**采用贪心法
+首先计算出每种物品单位质量的价值，然后依次将单位价值最高的物品尽可能多的装入背包中：若将这种物品全部装入后背包仍未满，则考虑单位质量价值次高的物品，直至背包装满。可以看出，排序在这里是非常重要的。 
+代码实现
+```javascript
+const fractional_kanpsack = (goods, W) => {
+            //先将每个物品按照价格排序
+            let sumV = 0, idx = 0
+            goods.sort(function(a, b) {
+                return a.v - b.v
+            })
+            for(let i = 0; i < goods.length; i++) {
+                if(goods[i][w] > W) {
+                    idx = i
+                    break
+                }
+                else {
+                    W -= goods[i][w]
+                    sumV += goods[i][v]
+                }
+            }
+            return sumV + Math.floor(goods[idx][v] * (W / goods[idx][w]))
+        }
 ```
-- (void)setTarget:(NSString *)target {
-    if (target == _target) return;
-    id pre = _target;
-    [target retain];//1.先保留新值
-    _target = target;//2.再进行赋值
-    [pre release];//3.释放旧值
-}
-```
-
-因为在 *并行队列* `DISPATCH_QUEUE_CONCURRENT` 中*异步* `dispatch_async` 对 `target`属性进行赋值，就会导致 target 已经被 `release`了，还会执行 `release`。这就是向已释放内存对象发送消息而发生 crash 。
-
-
-### 但是
-
-我敲了这段代码，执行的时候发现并不会 crash~
-
-```objc
-@property (nonatomic, strong) NSString *target;
-dispatch_queue_t queue = dispatch_queue_create("parallel", DISPATCH_QUEUE_CONCURRENT);
-for (int i = 0; i < 1000000 ; i++) {
-    dispatch_async(queue, ^{
-    	// ‘ksddkjalkjd’删除了
-        self.target = [NSString stringWithFormat:@"%d",i];
-    });
-}
-```
-
-原因就出在对 `self.target` 赋值的字符串上。博客的最后也提到了 - *‘上述代码的字符串改短一些，就不会崩溃’*，还有 `Tagged Pointer` 这个东西。
-
-我们将上面的代码修改下：
-
-
-```objc
-NSString *str = [NSString stringWithFormat:@"%d", i];
-NSLog(@"%d, %s, %p", i, object_getClassName(str), str);
-self.target = str;
-```
-
-输出：
-
-```
-0, NSTaggedPointerString, 0x3015
-```
-
-发现这个字符串类型是 `NSTaggedPointerString`，那我们来看看 Tagged Pointer 是什么？
-
-### Tagged Pointer
-
-Tagged Pointer 详细的内容可以看这里 [深入理解Tagged Pointer](http://www.infoq.com/cn/articles/deep-understanding-of-tagged-pointer)。
-
-Tagged Pointer 是一个能够提升性能、节省内存的有趣的技术。
-
-- Tagged Pointer 专门用来存储小的对象，例如 **NSNumber** 和 **NSDate**（后来可以存储小字符串）
-- Tagged Pointer 指针的值不再是地址了，而是真正的值。所以，实际上它不再是一个对象了，它只是一个披着对象皮的普通变量而已。
-- 它的内存并不存储在堆中，也不需要 malloc 和 free，所以拥有极快的读取和创建速度。
-
-
-
-
-### 参考：
-
-- [从一道网易面试题浅谈OC线程安全](https://www.jianshu.com/p/cec2a41aa0e7)
-
-- [深入理解Tagged Pointer](http://www.infoq.com/cn/articles/deep-understanding-of-tagged-pointer)
-
-- [【译】采用Tagged Pointer的字符串](http://www.cocoachina.com/ios/20150918/13449.html)
-
