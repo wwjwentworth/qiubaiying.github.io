@@ -84,7 +84,6 @@ class Cat extends Animal{
         super(name)
     }
 }
-
 let cat = new Cat('tom')
 cat.sayHi()
 ```
