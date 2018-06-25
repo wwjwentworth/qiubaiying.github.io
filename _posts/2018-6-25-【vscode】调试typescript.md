@@ -2,7 +2,7 @@
 layout:     post
 date:       2018-06-25
 author:     WWJ
-header-img: img/post-bg-map.png
+header-img: img/post-bg-map.jpg
 catalog: true
 tags: typescript
 ---
