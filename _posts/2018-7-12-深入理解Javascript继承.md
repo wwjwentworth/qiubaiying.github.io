@@ -1,3 +1,13 @@
+
+---
+layout:     post
+date:       2018-07-12
+author:     WWJ
+header-img: img/post-bg-mma1.jpg
+catalog: true
+tags: javascript
+---
+
 # Javascript继承
 **prototype，contrucotr，__proto__关系和区别**
 * 每一个构造函数内部都有一个内置的属性`prototype`指向它的原型对象
