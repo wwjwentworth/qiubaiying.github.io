@@ -2,7 +2,7 @@
 layout:     post
 date:       2018-07-12
 author:     WWJ
-header-img: img/post-bg-mma-1.jpg
+header-img: img/post-bg-mma-2.jpg
 catalog: true
 tags: javascript
 ---
