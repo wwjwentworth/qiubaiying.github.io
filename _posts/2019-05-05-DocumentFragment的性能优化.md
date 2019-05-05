@@ -28,7 +28,7 @@ const goldrenBlockSecDom = document.createElement('div');
 ```
 在code review之后了解到，如果在真实的DOM上使用appendChild这个方法，整个页面会发生回流，这是非常影响性能的操作
 
-###DocumentFragment
+### DocumentFragment
 
 
 ----------
