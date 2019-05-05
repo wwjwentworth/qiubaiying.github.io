@@ -1,3 +1,11 @@
+layout:     post
+date:       2019-05-05
+author:     WWJ
+header-img: img/post-bg-universe.jpg
+catalog: true
+tags: javascript
+---
+
 # DocumentFragment的性能优化
 在项目中遇到了需要往父级dom中插入很多个子元素的情况，一开始就是直接在父级dom上使用appendChild方法，将多个子元素插入进来
 
