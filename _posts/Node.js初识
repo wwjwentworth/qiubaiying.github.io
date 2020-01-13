@@ -1,0 +1,95 @@
+# Node.Js初识
+
+### Node.Js是什么？
+Node.js 是一个基于 Chrome V8 引擎的 JavaScript 运行时。这是摘自[Node.js中文网](http://nodejs.cn/)的一句话，这里两个个关键字**V8**， **JavaScript 运行时**，下面会讲到。从这句话里面可以看出，Node.Js并不是一门编程语言，而是一个提供JavaScript应用程序运行的环境
+
+###  JavaScript 运行时（运行环境）
+ **JavaScript 运行时是**表示实际运行JavaScript应用程序的**可执行程序**的另一个说法，其本身也是一个可执行程序。JavaScript 运行时由两部分组成，**Node API**和**Node Core**；
+ 
+**Node API**：由Node.Js提供的提供的一组现成的内置模块，用于构建应用程序。其中许多模块，比如文件系统模块（fs），是基于那些与底层操作系统通信的较低级别的应用程序（Node Core）之上。
+**Node Core**：一组JavaScript模块，用于实现Node API（有些模块会依赖与底层的 libuv 和其他C/C++代码，不过这是实现细节）；Node Core由两部分组成， Chrome V8 引擎和libuv事件循环机制；
+*  Chrome V8 引擎：用来编译JavaScript代码；
+*  事件循环：使用 libuv 事件驱动型非阻塞I/O来处理异步事件；
+
+所以可以想象一下，JavaScript 运行时其实就是 Chrome V8 引擎和libuv组合在一起，结合之后就变成了一个巨型磁铁，外面吸附着一堆Node API，以此来执行JavaScript应用程序；
+
+![Alt text](https://ibb.co/nRL8DMw)
+
+
+
+### Node.js的核心
+ Node.js的核心由两大部分构成：
+*  Chrome V8 引擎
+*  事件循环
+
+##### Chrome V8 引擎
+Node使用的Chrome V8 引擎来运行JavaScript应用程序，该引擎可以执行任何JavaScript代码（自己写的代码，Node API 和从Npm注册表获取的程序包的所有JavaScript代码），启动Node，就会运行**一个**V8实例，这里需要说一下， V8只会在一个线程上执行代码。
+
+##### 事件循环
+由于V8只会在一个线程上执行代码，所以自己写的程序，引入的程序，甚至V8引擎上下文都会被阻塞，直至数据可用且完成I/O操作！
+
+Node使用libuv来处理事件循环，在使用Node API的时候，将回调函数传入要使用的API中，在事件循环期间会执行该函数。
+
+事件循环包含多个调用回调函数的阶段
+* 计时器阶段：将会运行setTimeout和setInterval到期回调函数
+* 轮询阶段：将会使用轮询的方式来检测系统是否已经完成了所有的I/O操作，完成之后一次执行回调函数
+* 检查阶段：将运行 setImmediate() 回调函数
+
+所以，V8 引擎将会在两个“**线路**”上执行代码
+* 主线程：它从启动V8开始到运行结束，结束之后将执行权交给事件循环
+* 事件循环：执行所有回调函数的线路；
+
+V8自始至终都在同一个线程上执行代码，只不过将回调函数放在事件循环这个线路上执行；
+
+### 非阻塞I/O
+与之对应的是阻塞I/O，从字面意思就可以理解，阻塞I/O表示必须等到当前I/O操作完成之后才可以进行下一步操作，而非阻塞I/O则表示不需要等待就可以进行下一步操作。看两个例子来比较一下：
+
+##### 同步读取文件
+
+
+```javascript
+const fs = require('fs');
+console.log('starting program....');
+const fileContent = fs.readFileSync('./text.txt', 'utf-8');
+console.log(fileContent);
+console.log('finished program....');
+```
+
+控制台将会输出
+
+
+```javascript
+starting program....
+there is fileContent;
+finished program....
+```
+
+代码将会依次被执行，这里的依次是代码在文件中所处的行数。
+
+##### 异步读取文件
+
+```javascript
+const fs = require('fs');
+console.log('starting program....');
+const fileContent = fs.readFile('./text.txt', 'utf-8', (err, res) => {
+	console.log(res);
+});
+console.log('finished program....');
+```
+
+控制台将会输出
+
+```javascript
+starting program....
+finished program....
+there is fileContent
+```
+
+可以看到，程序会先打印`finished program....`，然后打印`there is fileContent`，也就是说程序不会等到读取文件这个操作完成之后再执行`console.log('finished program....');`这行代码，而是直接跳过去了；这就是阻塞I/O和非阻塞I/O之间的差别；
+
+##### 什么情况下使用同步 I/O
+有时候适合使用同步 I/O。事实上，同步 I/O 通常比异步 I/O 更快，原因在于设置和使用回调函数、轮询操作系统来获取 I/O 状态等操作都涉及到一定的开销。
+
+所以应该在I/O密集型应用中使用异步I/O；
+
+
