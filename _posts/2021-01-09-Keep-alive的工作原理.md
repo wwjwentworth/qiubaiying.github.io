@@ -27,7 +27,7 @@ keep-alive是Vue提供的一个抽象组件（内置），它自身不会渲染�
 </body>
 ```
 
-```javascript
+```vbscript-html
 const child1 = {
   template: `<div><button @click="handleAddNum">add</button><p>{{num}}</p></div>`,
   data() {
