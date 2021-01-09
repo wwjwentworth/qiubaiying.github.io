@@ -1,3 +1,11 @@
+---
+layout:     post
+date:       2021-01-09
+author:     WWJ
+header-img: img/post-bg-universe.jpg
+catalog: true
+tags: Vue
+---
 
 # keep-alive工作原理
 
